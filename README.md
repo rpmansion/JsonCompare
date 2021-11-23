@@ -1,17 +1,12 @@
-# jsondiffpatch.net
+# JsonDiffPathDelta
 <!--- badges -->
-[![Build status](https://ci.appveyor.com/api/projects/status/aavhn0lwas0j29gy?svg=true)](https://ci.appveyor.com/project/wbish/jsondiffpatch-net)
 [![NuGet](https://img.shields.io/nuget/v/JsonDiffPatch.Net.svg)](https://www.nuget.org/packages/JsonDiffPatch.Net/)
 
-JSON object diffs and reversible patching ([jsondiffpatch](https://github.com/benjamine/jsondiffpatch) compatible)
+Forked from https://www.nuget.org/packages/JsonDiffPatch.Net
 
 ## Installing
 
-Install from [jsondiffpatch.net](https://www.nuget.org/packages/JsonDiffPatch.Net/) nuget website, or run the following command:
-
-``` PowerShell
-Install-Package JsonDiffPatch.Net
-````
+TBD
 
 ## Usage
 
@@ -172,6 +167,7 @@ operations: [
 ```
 
 ## Attributions
+* [jsondiffpath.net](https://www.nuget.org/packages/JsonDiffPatch.Net)
 * [jsondiffpatch](https://github.com/benjamine/jsondiffpatch)
 * [google-diff-match-patch](https://github.com/google/diff-match-patch)
 * [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/)
