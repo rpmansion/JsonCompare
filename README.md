@@ -1,6 +1,6 @@
-# JsonDiffPathDelta
+# JsonCompare
 <!--- badges -->
-[![NuGet](https://img.shields.io/nuget/v/JsonDiffPatch.Net.svg)](https://www.nuget.org/packages/JsonDiffPatch.Net/)
+[![NuGet](https://img.shields.io/github/package-json/v/rpmansion/JsonCompare.svg?label=Nuget&logo=github)](https://github.com/rpmansion/JsonCompare/packages/1110828)
 
 Forked from https://www.nuget.org/packages/JsonDiffPatch.Net
 
