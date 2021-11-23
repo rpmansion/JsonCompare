@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(LibraryFrameworks)'==''">net45;netstandard1.0;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(LibraryFrameworks)'!=''">$(LibraryFrameworks)</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>JsonCompare</RootNamespace>
+    <AssemblyName>JsonCompare</AssemblyName>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <SignAssembly>true</SignAssembly>
+    <RepositoryUrl>https://github.com/codeblks/JsonCompare</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en-PH</NeutralLanguage>
+    <Authors>CodeBlks</Authors>
+    <Title>JsonDiffPatchDelta</Title>
+    <Copyright>Copyright © Robert Peter Mansion 2021</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/rpmansion/JsonDiffPatchDelta/main/LICENSE</PackageLicenseUrl>
+    <Description>JSON object diffs and reversible patching</Description>
+    <PackageId>JsonCompare</PackageId>
+    <PackageTags>json diff patch unpatch</PackageTags>
+    <PackageProjectUrl>https://github.com/codeblks/JsonCompare</PackageProjectUrl>
+	  <MinClientVersion>2.12</MinClientVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <TargetFrameworks>net461;netstandard1.0;netstandard1.3;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+  </ItemGroup>
+</Project>
