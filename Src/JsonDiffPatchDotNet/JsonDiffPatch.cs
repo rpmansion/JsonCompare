@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using DiffMatchPatch;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace JsonDiffPatchDotNet
 {
@@ -29,7 +28,7 @@ namespace JsonDiffPatchDotNet
 
 		/// <summary>
 		/// Diff two JSON objects.
-		/// 
+		///
 		/// The output is a JObject that contains enough information to represent the
 		/// delta between the two objects and to be able perform patch and reverse operations.
 		/// </summary>
@@ -38,6 +37,9 @@ namespace JsonDiffPatchDotNet
 		/// <returns>JSON Patch Document</returns>
 		public JToken Diff(JToken left, JToken right)
 		{
+			var objectHash = this._options.ObjectHash;
+			var itemMatch = new DefaultItemMatch(objectHash);
+
 			if (left == null)
 				left = new JValue("");
 			if (right == null)
@@ -67,10 +69,10 @@ namespace JsonDiffPatchDotNet
 					: null;
 			}
 
-			if (!JToken.DeepEquals(left, right))
+			if (!itemMatch.Match(left, right))
 			{
 				return new JArray(left, right);
-			}				
+			}
 
 			return null;
 		}
@@ -108,17 +110,17 @@ namespace JsonDiffPatchDotNet
 			{
 				var patchArray = (JArray)patch;
 
-				if (patchArray.Count == 1)	// Add
+				if (patchArray.Count == 1)  // Add
 				{
 					return patchArray[0];
 				}
 
-				if (patchArray.Count == 2)	// Replace
+				if (patchArray.Count == 2)  // Replace
 				{
 					return patchArray[1];
 				}
 
-				if (patchArray.Count == 3)	// Delete, Move or TextDiff
+				if (patchArray.Count == 3)  // Delete, Move or TextDiff
 				{
 					if (patchArray[2].Type != JTokenType.Integer)
 						throw new InvalidDataException("Invalid patch object");
@@ -192,17 +194,17 @@ namespace JsonDiffPatchDotNet
 			{
 				var patchArray = (JArray)patch;
 
-				if (patchArray.Count == 1)	// Add (we need to remove the property)
+				if (patchArray.Count == 1)  // Add (we need to remove the property)
 				{
 					return null;
 				}
 
-				if (patchArray.Count == 2)	// Replace
+				if (patchArray.Count == 2)  // Replace
 				{
 					return patchArray[0];
 				}
 
-				if (patchArray.Count == 3)	// Delete, Move or TextDiff
+				if (patchArray.Count == 3)  // Delete, Move or TextDiff
 				{
 					if (patchArray[2].Type != JTokenType.Integer)
 						throw new InvalidDataException("Invalid patch object");
@@ -275,7 +277,7 @@ namespace JsonDiffPatchDotNet
 
 		/// <summary>
 		/// Diff two JSON objects.
-		/// 
+		///
 		/// The output is a JObject that contains enough information to represent the
 		/// delta between the two objects and to be able perform patch and reverse operations.
 		/// </summary>
@@ -314,7 +316,7 @@ namespace JsonDiffPatchDotNet
 			return unpatchedObj?.ToString();
 		}
 
-		#endregion
+		#endregion String Overrides
 
 		private JObject ObjectDiff(JObject left, JObject right)
 		{
@@ -355,7 +357,7 @@ namespace JsonDiffPatchDotNet
 				}
 			}
 
-			// Find properties that were added 
+			// Find properties that were added
 			foreach (var rp in right.Properties())
 			{
 				if (left.Property(rp.Name) != null || (_options.DiffBehaviors & DiffBehavior.IgnoreNewProperties) == DiffBehavior.IgnoreNewProperties)
@@ -372,6 +374,8 @@ namespace JsonDiffPatchDotNet
 
 		private JObject ArrayDiff(JArray left, JArray right)
 		{
+			var objectHash = this._options.ObjectHash;
+			var itemMatch = new DefaultItemMatch(objectHash);
 			var result = JObject.Parse(@"{ ""_t"": ""a"" }");
 
 			int commonHead = 0;
@@ -380,19 +384,34 @@ namespace JsonDiffPatchDotNet
 			if (JToken.DeepEquals(left, right))
 				return null;
 
+			var childContext = new List<JToken>();
+
 			// Find common head
 			while (commonHead < left.Count
 				&& commonHead < right.Count
-				&& JToken.DeepEquals(left[commonHead], right[commonHead]))
+				&& itemMatch.Match(left[commonHead], right[commonHead]))
 			{
+				var index = commonHead;
+				var child = Diff(left[index], right[index]);
+				if (child != null)
+				{
+					result[$"{index}"] = child;
+				}
 				commonHead++;
 			}
 
 			// Find common tail
 			while (commonTail + commonHead < left.Count
 				&& commonTail + commonHead < right.Count
-				&& JToken.DeepEquals(left[left.Count - 1 - commonTail], right[right.Count - 1 - commonTail]))
+				&& itemMatch.Match(left[left.Count - 1 - commonTail], right[right.Count - 1 - commonTail]))
 			{
+				var index1 = left.Count - 1 - commonTail;
+				var index2 = right.Count - 1 - commonTail;
+				var child = Diff(left[index1], right[index2]);
+				if (child != null)
+				{
+					result[$"{index2}"] = child;
+				}
 				commonTail++;
 			}
 
@@ -411,6 +430,10 @@ namespace JsonDiffPatchDotNet
 				// Trivial case, a block (1 or more consecutive items) was removed
 				for (int index = commonHead; index < left.Count - commonTail; ++index)
 				{
+					if (result.ContainsKey(index.ToString()))
+					{
+						result.Remove(index.ToString());
+					}
 					result[$"_{index}"] = new JArray(left[index], 0, (int)DiffOperation.Deleted);
 				}
 
@@ -420,13 +443,17 @@ namespace JsonDiffPatchDotNet
 			// Complex Diff, find the LCS (Longest Common Subsequence)
 			List<JToken> trimmedLeft = left.ToList().GetRange(commonHead, left.Count - commonTail - commonHead);
 			List<JToken> trimmedRight = right.ToList().GetRange(commonHead, right.Count - commonTail - commonHead);
-			Lcs lcs = Lcs.Get(trimmedLeft, trimmedRight);
+			Lcs lcs = Lcs.Get(trimmedLeft, trimmedRight, itemMatch);
 
 			for (int index = commonHead; index < left.Count - commonTail; ++index)
 			{
 				if (lcs.Indices1.IndexOf(index - commonHead) < 0)
 				{
 					// Removed
+					if (result.ContainsKey(index.ToString()))
+					{
+						result.Remove(index.ToString());
+					}
 					result[$"_{index}"] = new JArray(left[index], 0, (int)DiffOperation.Deleted);
 				}
 			}
@@ -533,7 +560,6 @@ namespace JsonDiffPatchDotNet
 					}
 				}
 			}
-
 
 			// remove items, in reverse order to avoid sawing our own floor
 			toRemove.Sort((x, y) => int.Parse(x.Name).CompareTo(int.Parse(y.Name)));

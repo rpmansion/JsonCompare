@@ -1,10 +1,10 @@
-﻿namespace JsonDiffPatchDotNet
+namespace JsonDiffPatchDotNet
 {
 	public enum TextDiffMode
 	{
 		/// <summary>
-		/// Efficient string diff uses google-diff-match-patch to produce a patchable diff. For small string 
-		/// lengths, it is more efficient to use simple TextDiffMode as the less bytes are necessary to 
+		/// Efficient string diff uses google-diff-match-patch to produce a patchable diff. For small string
+		/// lengths, it is more efficient to use simple TextDiffMode as the less bytes are necessary to
 		/// do a string replace.
 		/// </summary>
 		Efficient,

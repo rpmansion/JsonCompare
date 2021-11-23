@@ -1,6 +1,6 @@
-﻿namespace JsonDiffPatchDotNet
+namespace JsonDiffPatchDotNet
 {
-	enum DiffOperation
+	internal enum DiffOperation
 	{
 		Deleted = 0,
 
