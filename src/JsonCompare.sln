@@ -4,10 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B520C700-7D45-4D82-BFB5-218FA68CF5CF}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-		NuGet.Config = NuGet.Config
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonCompare", "JsonCompare\JsonCompare.csproj", "{CB5ADECE-CCCE-402E-8682-7A90B6E26DC3}"
 EndProject
