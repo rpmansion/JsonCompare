@@ -1,7 +1,7 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 {
@@ -32,7 +32,7 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 					break;
 
 				case DeltaType.Deleted:
-					FormatDeleted(context);
+					FormatDeleted(context, delta);
 					break;
 
 				case DeltaType.Moved:
@@ -60,9 +60,11 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 				context.Path.RemoveAt(context.Path.Count - 1);
 		}
 
-		protected override void RootBegin(JsonFormatContext context, DeltaType type, NodeType nodeType) { }
+		protected override void RootBegin(JsonFormatContext context, DeltaType type, NodeType nodeType)
+		{ }
 
-		protected override void RootEnd(JsonFormatContext context, DeltaType type, NodeType nodeType) { }
+		protected override void RootEnd(JsonFormatContext context, DeltaType type, NodeType nodeType)
+		{ }
 
 		private void FormatNode(JsonFormatContext context, JToken delta, JToken left)
 		{
@@ -71,17 +73,17 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 
 		private void FormatAdded(JsonFormatContext context, JToken delta)
 		{
-			context.PushCurrentOp(OperationTypes.Add, delta[0]);
+			context.PushCurrentOp(OperationTypes.Add, null, delta[0]);
 		}
 
 		private void FormatModified(JsonFormatContext context, JToken delta)
 		{
-			context.PushCurrentOp(OperationTypes.Replace, delta[1]);
+			context.PushCurrentOp(OperationTypes.Replace, delta[0], delta[1]);
 		}
 
-		private void FormatDeleted(JsonFormatContext context)
+		private void FormatDeleted(JsonFormatContext context, JToken delta)
 		{
-			context.PushCurrentOp(OperationTypes.Remove);
+			context.PushCurrentOp(OperationTypes.Remove, delta[0]);
 		}
 
 		private void FormatMoved(JsonFormatContext context, JToken delta)
@@ -94,8 +96,8 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 			var removeOpsOtherOps = PartitionRemoveOps(result);
 			var removeOps = removeOpsOtherOps[0];
 			var otherOps = removeOpsOtherOps[1];
-			Array.Sort(removeOps, new RemoveOperationComparer());
-			return removeOps.Concat(otherOps).ToList();
+			var removeOpsReverse = removeOps.OrderBy(x => x.Path, new PathComparer());
+			return removeOpsReverse.Concat(otherOps).ToList();
 		}
 
 		private IList<Operation[]> PartitionRemoveOps(IList<Operation> result)
@@ -106,18 +108,18 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 			foreach (var op in result)
 				(op.Op.Equals("remove", StringComparison.Ordinal) ? left : right).Add(op);
 
-			return new List<Operation[]> {left.ToArray(), right.ToArray()};
+			return new List<Operation[]> { left.ToArray(), right.ToArray() };
 		}
 
-		private class RemoveOperationComparer : IComparer<Operation>
+		private class PathComparer : IComparer<string>
 		{
-			public int Compare(Operation a, Operation b)
+			public int Compare(string a, string b)
 			{
 				if (a == null) throw new ArgumentNullException(nameof(a));
 				if (b == null) throw new ArgumentNullException(nameof(b));
 
-				var splitA = a.Path.Split('/');
-				var splitB = b.Path.Split('/');
+				var splitA = a.Split('/');
+				var splitB = b.Split('/');
 
 				return splitA.Length != splitB.Length
 					? splitA.Length - splitB.Length

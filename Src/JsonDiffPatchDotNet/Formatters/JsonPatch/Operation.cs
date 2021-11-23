@@ -4,7 +4,8 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 {
 	public class Operation
 	{
-		public Operation() { }
+		public Operation()
+		{ }
 
 		public Operation(string op, string path, string from)
 		{
@@ -13,7 +14,7 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 			From = from;
 		}
 
-		public Operation(string op, string path, string from, object value)
+		public Operation(string op, string path, object from, object value)
 		{
 			Op = op;
 			Path = path;
@@ -28,7 +29,7 @@ namespace JsonDiffPatchDotNet.Formatters.JsonPatch
 		public string Op { get; set; }
 
 		[JsonProperty("from")]
-		public string From { get; set; }
+		public object From { get; set; }
 
 		[JsonProperty("value")]
 		public object Value { get; set; }

@@ -1,6 +1,6 @@
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace JsonDiffPatchDotNet.Formatters
 {
@@ -136,26 +136,26 @@ namespace JsonDiffPatchDotNet.Formatters
 			switch (delta.Type)
 			{
 				case JTokenType.Array:
-				{
-					var deltaArray = (JArray)delta;
-					switch (deltaArray.Count)
 					{
-						case 1: return DeltaType.Added;
-						case 2: return DeltaType.Modified;
-						case 3:
+						var deltaArray = (JArray)delta;
+						switch (deltaArray.Count)
 						{
-							switch ((DiffOperation)deltaArray[2].Value<int>())
-							{
-								case DiffOperation.Deleted: return DeltaType.Deleted;
-								case DiffOperation.TextDiff: return DeltaType.TextDiff;
-								case DiffOperation.ArrayMove: return DeltaType.Moved;
-							}
-							break;
+							case 1: return DeltaType.Added;
+							case 2: return DeltaType.Modified;
+							case 3:
+								{
+									switch ((DiffOperation)deltaArray[2].Value<int>())
+									{
+										case DiffOperation.Deleted: return DeltaType.Deleted;
+										case DiffOperation.TextDiff: return DeltaType.TextDiff;
+										case DiffOperation.ArrayMove: return DeltaType.Moved;
+									}
+									break;
+								}
 						}
-					}
 
-					break;
-				}
+						break;
+					}
 
 				case JTokenType.Object:
 					return DeltaType.Node;
